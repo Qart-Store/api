@@ -14,6 +14,7 @@ import orderRouter from "./routes/order.route";
 import paymentRouter from "./routes/payment.route";
 import productRouter from "./routes/product.route";
 import wishlistRouter from "./routes/wishlist.route";
+import adminRouter from "./routes/admin.route";
 import { sendSuccess } from "./utils/api-response";
 
 const app = express();
@@ -50,6 +51,7 @@ app.use("/api/cart", cartRouter);
 app.use("/api/wishlist", wishlistRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/payments", paymentRouter);
+app.use("/api/admin", adminRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
