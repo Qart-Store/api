@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-const optionalNullableText = z.string().trim().min(1).max(200).optional().nullable();
+const optionalNullableText = z
+  .string()
+  .trim()
+  .min(1)
+  .max(200)
+  .optional()
+  .nullable();
 
 const paginationQuerySchema = z
   .object({
@@ -125,7 +131,9 @@ export const createProductBodySchema = z
   })
   .strict();
 
-export const updateProductBodySchema = createProductBodySchema.partial().strict();
+export const updateProductBodySchema = createProductBodySchema
+  .partial()
+  .strict();
 
 export const categoryIdParamsSchema = z
   .object({

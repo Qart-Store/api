@@ -40,17 +40,20 @@ export const getDashboardSummary = asyncHandler(
   },
 );
 
-export const listCustomers = asyncHandler(async (req: Request, res: Response) => {
-  const result = await adminModel.listCustomersAdmin({
-    page: toNumber(req.query.page),
-    limit: toNumber(req.query.limit),
-    search: typeof req.query.search === "string" ? req.query.search : undefined,
-    isActive: toBoolean(req.query.isActive),
-    isEmailVerified: toBoolean(req.query.isEmailVerified),
-  });
+export const listCustomers = asyncHandler(
+  async (req: Request, res: Response) => {
+    const result = await adminModel.listCustomersAdmin({
+      page: toNumber(req.query.page),
+      limit: toNumber(req.query.limit),
+      search:
+        typeof req.query.search === "string" ? req.query.search : undefined,
+      isActive: toBoolean(req.query.isActive),
+      isEmailVerified: toBoolean(req.query.isEmailVerified),
+    });
 
-  return sendSuccess(res, "Customers fetched", result, 200, "ok");
-});
+    return sendSuccess(res, "Customers fetched", result, 200, "ok");
+  },
+);
 
 export const getCustomer = asyncHandler(async (req: Request, res: Response) => {
   const customerId = toSingleParam(req.params.customerId);
@@ -121,7 +124,13 @@ export const createCustomerAddress = asyncHandler(
     }
 
     const address = await customerModel.createCustomerAddress(customerId, body);
-    return sendSuccess(res, "Customer address created", address, 201, "success");
+    return sendSuccess(
+      res,
+      "Customer address created",
+      address,
+      201,
+      "success",
+    );
   },
 );
 
@@ -141,7 +150,13 @@ export const updateCustomerAddress = asyncHandler(
       throw new AppError("Address not found", 404, "error");
     }
 
-    return sendSuccess(res, "Customer address updated", address, 200, "success");
+    return sendSuccess(
+      res,
+      "Customer address updated",
+      address,
+      200,
+      "success",
+    );
   },
 );
 
@@ -150,7 +165,10 @@ export const deleteCustomerAddress = asyncHandler(
     const customerId = toSingleParam(req.params.customerId);
     const addressId = toSingleParam(req.params.addressId);
 
-    const deleted = await customerModel.deleteCustomerAddress(customerId, addressId);
+    const deleted = await customerModel.deleteCustomerAddress(
+      customerId,
+      addressId,
+    );
     if (!deleted) {
       throw new AppError("Address not found", 404, "error");
     }
@@ -189,7 +207,13 @@ export const clearCustomerCart = asyncHandler(
     }
 
     await adminModel.clearCustomerCartAdmin(customerId);
-    return sendSuccess(res, "Customer cart cleared", { customerId }, 200, "success");
+    return sendSuccess(
+      res,
+      "Customer cart cleared",
+      { customerId },
+      200,
+      "success",
+    );
   },
 );
 
@@ -227,33 +251,36 @@ export const clearCustomerWishlist = asyncHandler(
   },
 );
 
-export const listProducts = asyncHandler(async (req: Request, res: Response) => {
-  const filters: ProductListFilters = {
-    page: toNumber(req.query.page),
-    limit: toNumber(req.query.limit),
-    search: typeof req.query.search === "string" ? req.query.search : undefined,
-    category:
-      typeof req.query.category === "string" ? req.query.category : undefined,
-    brand: typeof req.query.brand === "string" ? req.query.brand : undefined,
-    status:
-      typeof req.query.status === "string"
-        ? (req.query.status as ProductStatus)
-        : undefined,
-    minPrice: toNumber(req.query.minPrice),
-    maxPrice: toNumber(req.query.maxPrice),
-    sortBy:
-      typeof req.query.sortBy === "string"
-        ? (req.query.sortBy as ProductListFilters["sortBy"])
-        : undefined,
-    sortOrder:
-      typeof req.query.sortOrder === "string"
-        ? (req.query.sortOrder as ProductListFilters["sortOrder"])
-        : undefined,
-  };
+export const listProducts = asyncHandler(
+  async (req: Request, res: Response) => {
+    const filters: ProductListFilters = {
+      page: toNumber(req.query.page),
+      limit: toNumber(req.query.limit),
+      search:
+        typeof req.query.search === "string" ? req.query.search : undefined,
+      category:
+        typeof req.query.category === "string" ? req.query.category : undefined,
+      brand: typeof req.query.brand === "string" ? req.query.brand : undefined,
+      status:
+        typeof req.query.status === "string"
+          ? (req.query.status as ProductStatus)
+          : undefined,
+      minPrice: toNumber(req.query.minPrice),
+      maxPrice: toNumber(req.query.maxPrice),
+      sortBy:
+        typeof req.query.sortBy === "string"
+          ? (req.query.sortBy as ProductListFilters["sortBy"])
+          : undefined,
+      sortOrder:
+        typeof req.query.sortOrder === "string"
+          ? (req.query.sortOrder as ProductListFilters["sortOrder"])
+          : undefined,
+    };
 
-  const result = await productModel.listProducts(filters);
-  return sendSuccess(res, "Products fetched", result, 200, "ok");
-});
+    const result = await productModel.listProducts(filters);
+    return sendSuccess(res, "Products fetched", result, 200, "ok");
+  },
+);
 
 export const getProduct = asyncHandler(async (req: Request, res: Response) => {
   const productId = toSingleParam(req.params.productId);
@@ -297,7 +324,13 @@ export const deleteProduct = asyncHandler(
       throw new AppError("Product not found", 404, "error");
     }
 
-    return sendSuccess(res, "Product deleted", { id: productId }, 200, "success");
+    return sendSuccess(
+      res,
+      "Product deleted",
+      { id: productId },
+      200,
+      "success",
+    );
   },
 );
 
@@ -359,7 +392,13 @@ export const deleteCategory = asyncHandler(
       throw new AppError("Category not found", 404, "error");
     }
 
-    return sendSuccess(res, "Category deleted", { id: categoryId }, 200, "success");
+    return sendSuccess(
+      res,
+      "Category deleted",
+      { id: categoryId },
+      200,
+      "success",
+    );
   },
 );
 
@@ -455,7 +494,10 @@ export const updateOrderStatus = asyncHandler(
     const orderId = toSingleParam(req.params.orderId);
     const body = req.body as { status: OrderEntity["status"] };
 
-    const updated = await adminModel.updateOrderStatusAdmin(orderId, body.status);
+    const updated = await adminModel.updateOrderStatusAdmin(
+      orderId,
+      body.status,
+    );
     if (!updated) {
       throw new AppError("Order not found", 404, "error");
     }
@@ -488,7 +530,8 @@ export const listPayments = asyncHandler(
         typeof req.query.customerId === "string"
           ? req.query.customerId
           : undefined,
-      orderId: typeof req.query.orderId === "string" ? req.query.orderId : undefined,
+      orderId:
+        typeof req.query.orderId === "string" ? req.query.orderId : undefined,
     });
 
     return sendSuccess(res, "Payments fetched", result, 200, "ok");
@@ -528,27 +571,25 @@ export const updatePaymentStatus = asyncHandler(
   },
 );
 
-export const deletePayment = asyncHandler(async (req: Request, res: Response) => {
-  const reference = toSingleParam(req.params.reference);
-  const deleted = await adminModel.deletePaymentByReferenceAdmin(reference);
+export const deletePayment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const reference = toSingleParam(req.params.reference);
+    const deleted = await adminModel.deletePaymentByReferenceAdmin(reference);
 
-  if (!deleted) {
-    throw new AppError("Payment not found", 404, "error");
-  }
+    if (!deleted) {
+      throw new AppError("Payment not found", 404, "error");
+    }
 
-  return sendSuccess(
-    res,
-    "Payment deleted",
-    { reference },
-    200,
-    "success",
-  );
-});
+    return sendSuccess(res, "Payment deleted", { reference }, 200, "success");
+  },
+);
 
-export const listCoupons = asyncHandler(async (_req: Request, res: Response) => {
-  const coupons = await adminModel.listCouponsAdmin();
-  return sendSuccess(res, "Coupons fetched", coupons, 200, "ok");
-});
+export const listCoupons = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const coupons = await adminModel.listCouponsAdmin();
+    return sendSuccess(res, "Coupons fetched", coupons, 200, "ok");
+  },
+);
 
 export const getCoupon = asyncHandler(async (req: Request, res: Response) => {
   const couponId = toSingleParam(req.params.couponId);
@@ -561,42 +602,48 @@ export const getCoupon = asyncHandler(async (req: Request, res: Response) => {
   return sendSuccess(res, "Coupon fetched", coupon, 200, "ok");
 });
 
-export const createCoupon = asyncHandler(async (req: Request, res: Response) => {
-  const body = req.body as {
-    code: string;
-    discountPercent: number;
-    isActive?: boolean;
-    expiresAt?: string | null;
-  };
+export const createCoupon = asyncHandler(
+  async (req: Request, res: Response) => {
+    const body = req.body as {
+      code: string;
+      discountPercent: number;
+      isActive?: boolean;
+      expiresAt?: string | null;
+    };
 
-  const coupon = await adminModel.createCouponAdmin(body);
-  return sendSuccess(res, "Coupon created", coupon, 201, "success");
-});
+    const coupon = await adminModel.createCouponAdmin(body);
+    return sendSuccess(res, "Coupon created", coupon, 201, "success");
+  },
+);
 
-export const updateCoupon = asyncHandler(async (req: Request, res: Response) => {
-  const couponId = toSingleParam(req.params.couponId);
-  const body = req.body as {
-    code?: string;
-    discountPercent?: number;
-    isActive?: boolean;
-    expiresAt?: string | null;
-  };
+export const updateCoupon = asyncHandler(
+  async (req: Request, res: Response) => {
+    const couponId = toSingleParam(req.params.couponId);
+    const body = req.body as {
+      code?: string;
+      discountPercent?: number;
+      isActive?: boolean;
+      expiresAt?: string | null;
+    };
 
-  const updated = await adminModel.updateCouponAdmin(couponId, body);
-  if (!updated) {
-    throw new AppError("Coupon not found", 404, "error");
-  }
+    const updated = await adminModel.updateCouponAdmin(couponId, body);
+    if (!updated) {
+      throw new AppError("Coupon not found", 404, "error");
+    }
 
-  return sendSuccess(res, "Coupon updated", updated, 200, "success");
-});
+    return sendSuccess(res, "Coupon updated", updated, 200, "success");
+  },
+);
 
-export const deleteCoupon = asyncHandler(async (req: Request, res: Response) => {
-  const couponId = toSingleParam(req.params.couponId);
-  const deleted = await adminModel.deleteCouponAdmin(couponId);
+export const deleteCoupon = asyncHandler(
+  async (req: Request, res: Response) => {
+    const couponId = toSingleParam(req.params.couponId);
+    const deleted = await adminModel.deleteCouponAdmin(couponId);
 
-  if (!deleted) {
-    throw new AppError("Coupon not found", 404, "error");
-  }
+    if (!deleted) {
+      throw new AppError("Coupon not found", 404, "error");
+    }
 
-  return sendSuccess(res, "Coupon deleted", { id: couponId }, 200, "success");
-});
+    return sendSuccess(res, "Coupon deleted", { id: couponId }, 200, "success");
+  },
+);

@@ -12,8 +12,12 @@ function toPagination(page?: number, limit?: number) {
 export async function getAdminDashboardSummary() {
   const [customers, products, orders, payments, revenue, pendingOrders] =
     await Promise.all([
-      dbQuery<{ count: string }>(`SELECT COUNT(*)::text AS count FROM customers;`),
-      dbQuery<{ count: string }>(`SELECT COUNT(*)::text AS count FROM products;`),
+      dbQuery<{ count: string }>(
+        `SELECT COUNT(*)::text AS count FROM customers;`,
+      ),
+      dbQuery<{ count: string }>(
+        `SELECT COUNT(*)::text AS count FROM products;`,
+      ),
       dbQuery<{ count: string }>(`SELECT COUNT(*)::text AS count FROM orders;`),
       dbQuery<{ count: string }>(
         `SELECT COUNT(*)::text AS count FROM payment_transactions;`,
@@ -633,7 +637,9 @@ export async function updateCouponAdmin(
 }
 
 export async function deleteCouponAdmin(couponId: string) {
-  const result = await dbQuery(`DELETE FROM coupons WHERE id = $1;`, [couponId]);
+  const result = await dbQuery(`DELETE FROM coupons WHERE id = $1;`, [
+    couponId,
+  ]);
   return (result.rowCount ?? 0) > 0;
 }
 
@@ -715,7 +721,8 @@ export async function updateCategoryAdmin(
   if (!existing) return null;
 
   const name = input.name?.trim() || existing.name;
-  const slug = input.slug?.trim() || (input.name ? slugify(name) : existing.slug);
+  const slug =
+    input.slug?.trim() || (input.name ? slugify(name) : existing.slug);
 
   const result = await dbQuery<CategoryEntity>(
     `
@@ -734,7 +741,9 @@ export async function updateCategoryAdmin(
       categoryId,
       name,
       slug,
-      input.description !== undefined ? input.description : existing.description,
+      input.description !== undefined
+        ? input.description
+        : existing.description,
     ],
   );
 
@@ -815,7 +824,8 @@ export async function updateBrandAdmin(
   if (!existing) return null;
 
   const name = input.name?.trim() || existing.name;
-  const slug = input.slug?.trim() || (input.name ? slugify(name) : existing.slug);
+  const slug =
+    input.slug?.trim() || (input.name ? slugify(name) : existing.slug);
 
   const result = await dbQuery<BrandEntity>(
     `

@@ -294,7 +294,10 @@ adminRouter.get(
 );
 adminRouter.patch(
   "/coupons/:couponId",
-  validateRequest({ params: couponIdParamsSchema, body: updateCouponBodySchema }),
+  validateRequest({
+    params: couponIdParamsSchema,
+    body: updateCouponBodySchema,
+  }),
   updateCoupon,
 );
 adminRouter.delete(
