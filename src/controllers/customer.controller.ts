@@ -4,6 +4,7 @@ import * as customerModel from "../models/customer.model";
 import asyncHandler from "../utils/async-handler";
 import AppError from "../utils/app-error";
 import { sendSuccess } from "../utils/api-response";
+import { signAuthToken } from "../utils/token";
 
 function toSingleParam(value: string | string[] | undefined) {
   if (Array.isArray(value)) return value[0] ?? "";
@@ -12,6 +13,14 @@ function toSingleParam(value: string | string[] | undefined) {
 
 function toSafeCustomer(customer: CustomerEntity) {
   return customer;
+}
+
+function requireAuthUser(req: Request) {
+  if (!req.authUser?.id) {
+    throw new AppError("Authentication required", 401, "failed");
+  }
+
+  return req.authUser;
 }
 
 export const registerCustomer = asyncHandler(
@@ -60,10 +69,12 @@ export const registerCustomer = asyncHandler(
       phone: body.phone ?? null,
     });
 
+    const token = signAuthToken({ sub: customer.id, email: customer.email });
+
     return sendSuccess(
       res,
       "Customer registered successfully",
-      toSafeCustomer(customer),
+      { customer: toSafeCustomer(customer), token },
       201,
       "success",
     );
@@ -108,7 +119,138 @@ export const loginCustomer = asyncHandler(
       updatedAt: customer.updatedAt,
     };
 
-    return sendSuccess(res, "Login successful", sanitized, 200, "success");
+    const token = signAuthToken({ sub: sanitized.id, email: sanitized.email });
+
+    return sendSuccess(
+      res,
+      "Login successful",
+      { customer: sanitized, token },
+      200,
+      "success",
+    );
+  },
+);
+
+export const getCurrentCustomer = asyncHandler(
+  async (req: Request, res: Response) => {
+    const authUser = requireAuthUser(req);
+    const customer = await customerModel.findCustomerById(authUser.id);
+
+    if (!customer) {
+      throw new AppError("Customer not found", 404, "error");
+    }
+
+    return sendSuccess(
+      res,
+      "Customer profile fetched",
+      toSafeCustomer(customer),
+      200,
+      "ok",
+    );
+  },
+);
+
+export const updateCurrentCustomer = asyncHandler(
+  async (req: Request, res: Response) => {
+    const authUser = requireAuthUser(req);
+    const body = req.body as UpdateCustomerInput;
+
+    const updated = await customerModel.updateCustomer(authUser.id, body);
+
+    if (!updated) {
+      throw new AppError("Customer not found", 404, "error");
+    }
+
+    return sendSuccess(
+      res,
+      "Customer profile updated",
+      toSafeCustomer(updated),
+      200,
+      "success",
+    );
+  },
+);
+
+export const listCurrentCustomerAddresses = asyncHandler(
+  async (req: Request, res: Response) => {
+    const authUser = requireAuthUser(req);
+    const addresses = await customerModel.listCustomerAddresses(authUser.id);
+    return sendSuccess(res, "Customer addresses fetched", addresses, 200, "ok");
+  },
+);
+
+export const createCurrentCustomerAddress = asyncHandler(
+  async (req: Request, res: Response) => {
+    const authUser = requireAuthUser(req);
+    const body = req.body as CreateCustomerAddressInput;
+
+    if (
+      !body?.recipientName?.trim() ||
+      !body?.state?.trim() ||
+      !body?.city?.trim() ||
+      !body?.addressLine1?.trim()
+    ) {
+      throw new AppError(
+        "recipientName, state, city and addressLine1 are required",
+        400,
+        "failed",
+      );
+    }
+
+    const address = await customerModel.createCustomerAddress(
+      authUser.id,
+      body,
+    );
+    return sendSuccess(res, "Customer address added", address, 201, "success");
+  },
+);
+
+export const updateCurrentCustomerAddress = asyncHandler(
+  async (req: Request, res: Response) => {
+    const authUser = requireAuthUser(req);
+    const addressId = toSingleParam(req.params.addressId);
+    const body = req.body as UpdateCustomerAddressInput;
+
+    const address = await customerModel.updateCustomerAddress(
+      authUser.id,
+      addressId,
+      body,
+    );
+
+    if (!address) {
+      throw new AppError("Address not found", 404, "error");
+    }
+
+    return sendSuccess(
+      res,
+      "Customer address updated",
+      address,
+      200,
+      "success",
+    );
+  },
+);
+
+export const deleteCurrentCustomerAddress = asyncHandler(
+  async (req: Request, res: Response) => {
+    const authUser = requireAuthUser(req);
+    const addressId = toSingleParam(req.params.addressId);
+
+    const deleted = await customerModel.deleteCustomerAddress(
+      authUser.id,
+      addressId,
+    );
+    if (!deleted) {
+      throw new AppError("Address not found", 404, "error");
+    }
+
+    return sendSuccess(
+      res,
+      "Customer address deleted",
+      { id: addressId },
+      200,
+      "success",
+    );
   },
 );
 

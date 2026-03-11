@@ -73,6 +73,17 @@ export async function findCustomerByEmailWithPassword(
   return result.rows[0] ?? null;
 }
 
+export async function findCustomerByEmail(
+  email: string,
+): Promise<CustomerEntity | null> {
+  const result = await dbQuery<CustomerEntity>(
+    `${CUSTOMER_SELECT} WHERE LOWER(c.email) = LOWER($1) LIMIT 1;`,
+    [email.trim()],
+  );
+
+  return result.rows[0] ?? null;
+}
+
 export async function findCustomerById(
   customerId: string,
 ): Promise<CustomerEntity | null> {

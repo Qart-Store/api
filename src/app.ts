@@ -7,8 +7,13 @@ import morgan from "morgan";
 import env from "./config/env";
 import errorHandler from "./middlewares/error-handler.middleware";
 import notFoundHandler from "./middlewares/not-found.middleware";
+import catalogRouter from "./routes/catalog.route";
+import cartRouter from "./routes/cart.route";
 import customerRouter from "./routes/customer.route";
+import orderRouter from "./routes/order.route";
+import paymentRouter from "./routes/payment.route";
 import productRouter from "./routes/product.route";
+import wishlistRouter from "./routes/wishlist.route";
 import { sendSuccess } from "./utils/api-response";
 
 const app = express();
@@ -40,6 +45,11 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/products", productRouter);
 app.use("/api/customers", customerRouter);
+app.use("/api/catalog", catalogRouter);
+app.use("/api/cart", cartRouter);
+app.use("/api/wishlist", wishlistRouter);
+app.use("/api/orders", orderRouter);
+app.use("/api/payments", paymentRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
