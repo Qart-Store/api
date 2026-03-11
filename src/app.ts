@@ -5,8 +5,9 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import env from "./config/env";
-import errorHandler from "./middlewares/error-handler";
-import notFoundHandler from "./middlewares/not-found";
+import errorHandler from "./middlewares/error-handler.middleware";
+import notFoundHandler from "./middlewares/not-found.middleware";
+import productRouter from "./routes/product.route";
 import { sendSuccess } from "./utils/api-response";
 
 const app = express();
@@ -35,6 +36,8 @@ app.get("/health", (_req, res) => {
     "ok",
   );
 });
+
+app.use("/api/products", productRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
