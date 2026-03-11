@@ -7,6 +7,7 @@ import morgan from "morgan";
 import env from "./config/env";
 import errorHandler from "./middlewares/error-handler.middleware";
 import notFoundHandler from "./middlewares/not-found.middleware";
+import customerRouter from "./routes/customer.route";
 import productRouter from "./routes/product.route";
 import { sendSuccess } from "./utils/api-response";
 
@@ -38,6 +39,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/products", productRouter);
+app.use("/api/customers", customerRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
