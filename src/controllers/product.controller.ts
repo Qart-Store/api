@@ -3,6 +3,10 @@ import * as productModel from "../models/product.model";
 import asyncHandler from "../utils/async-handler";
 import AppError from "../utils/app-error";
 import { sendSuccess } from "../utils/api-response";
+import {
+  buildCreateProductInput,
+  buildUpdateProductInput,
+} from "../utils/product-payload";
 
 function toNumber(value: unknown) {
   if (value === undefined || value === null || value === "") return undefined;
@@ -73,7 +77,7 @@ export const getProductById = asyncHandler(
 
 export const createProduct = asyncHandler(
   async (req: Request, res: Response) => {
-    const body = req.body as CreateProductInput;
+    const body = await buildCreateProductInput(req);
 
     if (!body?.name?.trim()) {
       throw new AppError("name is required", 400, "failed");
@@ -91,13 +95,19 @@ export const createProduct = asyncHandler(
       );
     }
 
-    const payload: CreateProductInput = {
-      ...body,
-      images: toStringArray(body.images),
-      tags: toStringArray(body.tags),
-    };
+    if (!body.bannerUrl) {
+      throw new AppError("banner is required", 400, "failed");
+    }
 
-    const product = await productModel.createProduct(payload);
+    if (!body.images?.length) {
+      throw new AppError(
+        "at least one product image is required",
+        400,
+        "failed",
+      );
+    }
+
+    const product = await productModel.createProduct(body);
     return sendSuccess(
       res,
       "Product created successfully",
@@ -111,7 +121,7 @@ export const createProduct = asyncHandler(
 export const updateProduct = asyncHandler(
   async (req: Request, res: Response) => {
     const productId = toSingleParam(req.params.id);
-    const body = req.body as UpdateProductInput;
+    const body = await buildUpdateProductInput(req);
 
     if (
       body.price !== undefined &&
@@ -126,13 +136,7 @@ export const updateProduct = asyncHandler(
       );
     }
 
-    const payload: UpdateProductInput = {
-      ...body,
-      images: toStringArray(body.images),
-      tags: toStringArray(body.tags),
-    };
-
-    const updated = await productModel.updateProduct(productId, payload);
+    const updated = await productModel.updateProduct(productId, body);
     if (!updated) {
       throw new AppError("Product not found", 404, "error");
     }

@@ -2,9 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { Client } from "pg";
-import dotenv from "dotenv";
-
-dotenv.config();
+import "../src/config/load-env";
 
 type MigrationDirection = "up" | "down";
 

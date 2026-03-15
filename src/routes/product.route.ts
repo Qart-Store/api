@@ -6,13 +6,14 @@ import {
   updateProduct,
   deleteProduct,
 } from "../controllers/product.controller";
+import { productUploadMiddleware } from "../middlewares/upload.middleware";
 
 const productRouter = Router();
 
 productRouter.get("/", listProducts);
 productRouter.get("/:id", getProductById);
-productRouter.post("/", createProduct);
-productRouter.patch("/:id", updateProduct);
+productRouter.post("/", productUploadMiddleware, createProduct);
+productRouter.patch("/:id", productUploadMiddleware, updateProduct);
 productRouter.delete("/:id", deleteProduct);
 
 export default productRouter;

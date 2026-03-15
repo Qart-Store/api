@@ -67,10 +67,23 @@ export const paymentVerifyParamsSchema = z
   })
   .strict();
 
-export const paymentWebhookBodySchema = z
-  .object({
-    reference: z.string().trim().min(6).max(120),
-    status: z.enum(["pending", "success", "failed", "abandoned"]).optional(),
-    payload: z.record(z.string(), z.unknown()).optional(),
-  })
-  .strict();
+export const paymentWebhookBodySchema = z.union([
+  z
+    .object({
+      reference: z.string().trim().min(6).max(120),
+      status: z.enum(["pending", "success", "failed", "abandoned"]).optional(),
+      payload: z.record(z.string(), z.unknown()).optional(),
+    })
+    .strict(),
+  z
+    .object({
+      event: z.string().trim().min(1),
+      data: z
+        .object({
+          reference: z.string().trim().min(6).max(120),
+          status: z.string().trim().min(1).optional(),
+        })
+        .passthrough(),
+    })
+    .passthrough(),
+]);

@@ -31,7 +31,16 @@ export async function getWishlistItems(
       SELECT
         w.product_id AS "productId",
         p.name,
-        p.image_url AS "imageUrl",
+        COALESCE(
+          (
+            SELECT pi.url
+            FROM product_images pi
+            WHERE pi.product_id = p.id
+            ORDER BY pi.position ASC, pi.id ASC
+            LIMIT 1
+          ),
+          p.banner_url
+        ) AS "imageUrl",
         p.price::float8 AS price,
         p.status,
         w.created_at AS "createdAt"

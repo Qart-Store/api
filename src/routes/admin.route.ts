@@ -1,5 +1,6 @@
 import { Router } from "express";
 import adminAuthMiddleware from "../middlewares/admin-auth.middleware";
+import { productUploadMiddleware } from "../middlewares/upload.middleware";
 import validateRequest from "../middlewares/validate-request.middleware";
 import {
   getDashboardSummary,
@@ -159,6 +160,7 @@ adminRouter.get(
 );
 adminRouter.post(
   "/products",
+  productUploadMiddleware,
   validateRequest({ body: createProductBodySchema }),
   createProduct,
 );
@@ -169,6 +171,7 @@ adminRouter.get(
 );
 adminRouter.patch(
   "/products/:productId",
+  productUploadMiddleware,
   validateRequest({
     params: productIdParamsSchema,
     body: updateProductBodySchema,

@@ -45,7 +45,16 @@ export async function getCartItems(
         ci.color,
         ci.size,
         p.name AS "productName",
-        p.image_url AS "imageUrl",
+        COALESCE(
+          (
+            SELECT pi.url
+            FROM product_images pi
+            WHERE pi.product_id = p.id
+            ORDER BY pi.position ASC, pi.id ASC
+            LIMIT 1
+          ),
+          p.banner_url
+        ) AS "imageUrl",
         p.price::float8 AS price,
         p.stock,
         p.status,

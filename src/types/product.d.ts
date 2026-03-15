@@ -25,7 +25,7 @@ interface ProductEntity {
   stock: number;
   sku: string | null;
   rating: number | null;
-  imageUrl: string | null;
+  bannerUrl: string | null;
   categoryId: string | null;
   categorySlug: string | null;
   categoryName: string | null;
@@ -68,7 +68,7 @@ interface CreateProductInput {
   stock?: number;
   sku?: string | null;
   rating?: number | null;
-  imageUrl?: string | null;
+  bannerUrl?: string | null;
   categorySlug?: string | null;
   categoryName?: string | null;
   brandName?: string | null;
@@ -84,7 +84,7 @@ interface UpdateProductInput {
   stock?: number;
   sku?: string | null;
   rating?: number | null;
-  imageUrl?: string | null;
+  bannerUrl?: string | null;
   categorySlug?: string | null;
   categoryName?: string | null;
   brandName?: string | null;

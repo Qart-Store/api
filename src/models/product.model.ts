@@ -12,7 +12,7 @@ const BASE_SELECT = `
     p.stock,
     p.sku,
     p.rating::float8 AS rating,
-    p.image_url AS "imageUrl",
+    p.banner_url AS "bannerUrl",
     p.category_id AS "categoryId",
     c.slug AS "categorySlug",
     c.name AS "categoryName",
@@ -21,7 +21,7 @@ const BASE_SELECT = `
     p.created_at AS "createdAt",
     p.updated_at AS "updatedAt",
     COALESCE(
-      ARRAY_REMOVE(ARRAY_AGG(DISTINCT pi.url ORDER BY pi.url), NULL),
+      ARRAY_REMOVE(ARRAY_AGG(pi.url ORDER BY pi.position ASC, pi.id ASC), NULL),
       '{}'
     ) AS images,
     COALESCE(
@@ -228,7 +228,7 @@ export async function createProduct(
   const inserted = await dbQuery<{ id: string }>(
     `
       INSERT INTO products(
-        name, slug, description, price, status, stock, sku, rating, image_url, category_id, brand_id
+        name, slug, description, price, status, stock, sku, rating, banner_url, category_id, brand_id
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
       )
@@ -243,7 +243,7 @@ export async function createProduct(
       input.stock ?? 0,
       input.sku ?? null,
       input.rating ?? null,
-      input.imageUrl ?? null,
+      input.bannerUrl ?? null,
       categoryId,
       brandId,
     ],
@@ -315,7 +315,7 @@ export async function updateProduct(
         stock = $7,
         sku = $8,
         rating = $9,
-        image_url = $10,
+        banner_url = $10,
         category_id = $11,
         brand_id = $12
       WHERE id = $1;
@@ -332,7 +332,7 @@ export async function updateProduct(
       input.stock !== undefined ? input.stock : existing.stock,
       input.sku !== undefined ? input.sku : existing.sku,
       input.rating !== undefined ? input.rating : existing.rating,
-      input.imageUrl !== undefined ? input.imageUrl : existing.imageUrl,
+      input.bannerUrl !== undefined ? input.bannerUrl : existing.bannerUrl,
       categoryId,
       brandId,
     ],

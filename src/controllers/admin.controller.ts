@@ -5,6 +5,10 @@ import * as productModel from "../models/product.model";
 import asyncHandler from "../utils/async-handler";
 import AppError from "../utils/app-error";
 import { sendSuccess } from "../utils/api-response";
+import {
+  buildCreateProductInput,
+  buildUpdateProductInput,
+} from "../utils/product-payload";
 
 function toSingleParam(value: string | string[] | undefined) {
   if (Array.isArray(value)) return value[0] ?? "";
@@ -295,7 +299,32 @@ export const getProduct = asyncHandler(async (req: Request, res: Response) => {
 
 export const createProduct = asyncHandler(
   async (req: Request, res: Response) => {
-    const body = req.body as CreateProductInput;
+    const body = await buildCreateProductInput(req);
+
+    if (!body.name) {
+      throw new AppError("name is required", 400, "failed");
+    }
+
+    if (!Number.isFinite(body.price) || body.price < 0) {
+      throw new AppError(
+        "price must be a valid non-negative number",
+        400,
+        "failed",
+      );
+    }
+
+    if (!body.bannerUrl) {
+      throw new AppError("banner is required", 400, "failed");
+    }
+
+    if (!body.images?.length) {
+      throw new AppError(
+        "at least one product image is required",
+        400,
+        "failed",
+      );
+    }
+
     const product = await productModel.createProduct(body);
     return sendSuccess(res, "Product created", product, 201, "success");
   },
@@ -304,7 +333,18 @@ export const createProduct = asyncHandler(
 export const updateProduct = asyncHandler(
   async (req: Request, res: Response) => {
     const productId = toSingleParam(req.params.productId);
-    const body = req.body as UpdateProductInput;
+    const body = await buildUpdateProductInput(req);
+
+    if (
+      body.price !== undefined &&
+      (!Number.isFinite(body.price) || body.price < 0)
+    ) {
+      throw new AppError(
+        "price must be a valid non-negative number",
+        400,
+        "failed",
+      );
+    }
 
     const updated = await productModel.updateProduct(productId, body);
     if (!updated) {

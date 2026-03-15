@@ -15,7 +15,7 @@ import {
 const paymentRouter = Router();
 
 paymentRouter.post(
-  "/webhook",
+  "/webhook/paystack",
   validateRequest({ body: paymentWebhookBodySchema }),
   paymentWebhook,
 );

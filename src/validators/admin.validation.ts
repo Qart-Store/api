@@ -1,5 +1,38 @@
 import { z } from "zod";
 
+function toStringArrayInput(value: unknown) {
+  if (value === undefined || value === null || value === "") return undefined;
+  if (Array.isArray(value)) return value;
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+
+    if (trimmed.startsWith("[")) {
+      try {
+        return JSON.parse(trimmed) as unknown;
+      } catch {
+        return trimmed
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    }
+
+    return trimmed
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return value;
+}
+
+const stringArraySchema = z.preprocess(
+  toStringArrayInput,
+  z.array(z.string().trim().min(1)),
+);
+
 const optionalNullableText = z
   .string()
   .trim()
@@ -117,17 +150,21 @@ export const createProductBodySchema = z
   .object({
     name: z.string().trim().min(1).max(180),
     description: z.string().trim().max(2000).optional().nullable(),
-    price: z.number().min(0),
+    price: z.coerce.number().min(0),
     status: productsQuerySchema.shape.status,
-    stock: z.number().int().min(0).optional(),
+    stock: z.coerce.number().int().min(0).optional(),
     sku: z.string().trim().min(1).max(120).optional().nullable(),
-    rating: z.number().min(0).max(5).optional().nullable(),
-    imageUrl: z.string().trim().url().optional().nullable(),
+    rating: z.coerce.number().min(0).max(5).optional().nullable(),
+    bannerUrl: z.string().trim().url().optional().nullable(),
     categorySlug: z.string().trim().min(1).max(180).optional().nullable(),
     categoryName: z.string().trim().min(1).max(180).optional().nullable(),
     brandName: z.string().trim().min(1).max(180).optional().nullable(),
-    images: z.array(z.string().trim().url()).max(20).optional(),
-    tags: z.array(z.string().trim().min(1).max(60)).max(50).optional(),
+    images: stringArraySchema
+      .pipe(z.array(z.string().trim().url()).max(20))
+      .optional(),
+    tags: stringArraySchema
+      .pipe(z.array(z.string().trim().min(1).max(60)).max(50))
+      .optional(),
   })
   .strict();
 

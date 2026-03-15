@@ -1,7 +1,5 @@
 import { Pool, QueryResult, QueryResultRow } from "pg";
-import dotenv from "dotenv";
-
-dotenv.config();
+import "./load-env";
 
 const databaseUrl = process.env.DATABASE_URL;
 

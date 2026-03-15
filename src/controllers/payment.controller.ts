@@ -1,5 +1,11 @@
 import { Request, Response } from "express";
 import * as paymentModel from "../models/payment.model";
+import {
+  initializePaystackTransaction,
+  mapPaystackStatusToPaymentStatus,
+  verifyPaystackTransaction,
+  verifyPaystackWebhookSignature,
+} from "../services/paystack.service";
 import asyncHandler from "../utils/async-handler";
 import AppError from "../utils/app-error";
 import { sendSuccess } from "../utils/api-response";
@@ -15,6 +21,11 @@ function requireAuthUser(req: Request) {
   }
 
   return req.authUser;
+}
+
+function toHeaderString(value: string | string[] | undefined) {
+  if (Array.isArray(value)) return value[0];
+  return value;
 }
 
 export const initializeMyPayment = asyncHandler(
@@ -38,12 +49,25 @@ export const initializeMyPayment = asyncHandler(
       body?.payload,
     );
 
+    const paystackTransaction = await initializePaystackTransaction({
+      email: authUser.email,
+      amount: Math.round(amount * 100),
+      reference: transaction.reference,
+      metadata: {
+        customerId: authUser.id,
+        orderId: body?.orderId ?? null,
+        ...(body?.payload ?? {}),
+      },
+    });
+
     return sendSuccess(
       res,
       "Payment initialized",
       {
         transaction,
-        authorizationUrl: `https://checkout.paystack.com/${transaction.reference}`,
+        authorizationUrl: paystackTransaction.authorization_url,
+        accessCode: paystackTransaction.access_code,
+        reference: paystackTransaction.reference,
       },
       201,
       "success",
@@ -65,33 +89,87 @@ export const verifyMyPayment = asyncHandler(
       throw new AppError("Payment not found", 404, "error");
     }
 
-    return sendSuccess(res, "Payment fetched", transaction, 200, "ok");
+    const paystackVerification = await verifyPaystackTransaction(reference);
+    const status = mapPaystackStatusToPaymentStatus(
+      paystackVerification.status,
+    );
+
+    const updatedTransaction = await paymentModel.markPaymentStatus(
+      reference,
+      status,
+      {
+        provider: "paystack",
+        verification: paystackVerification as unknown as Record<
+          string,
+          unknown
+        >,
+      },
+    );
+
+    return sendSuccess(
+      res,
+      "Payment fetched",
+      {
+        transaction: updatedTransaction ?? transaction,
+        verification: paystackVerification,
+      },
+      200,
+      "ok",
+    );
   },
 );
 
 export const paymentWebhook = asyncHandler(
   async (req: Request, res: Response) => {
-    const event = req.body as {
-      reference?: string;
-      status?: PaymentTransactionEntity["status"];
-      payload?: Record<string, unknown>;
-    };
+    const rawBody = req.rawBody ?? "";
+    const signature = toHeaderString(req.headers["x-paystack-signature"]);
+    const isValidSignature = verifyPaystackWebhookSignature(rawBody, signature);
 
-    if (!event?.reference?.trim()) {
+    if (!isValidSignature) {
+      throw new AppError("Invalid paystack webhook signature", 401, "failed");
+    }
+
+    const event = req.body as
+      | {
+          reference?: string;
+          status?: PaymentTransactionEntity["status"];
+          payload?: Record<string, unknown>;
+        }
+      | {
+          event?: string;
+          data?: {
+            reference?: string;
+            status?: string;
+          } & Record<string, unknown>;
+        };
+
+    const defaultEvent =
+      "data" in event
+        ? undefined
+        : (event as {
+            reference?: string;
+            status?: PaymentTransactionEntity["status"];
+          });
+    const paystackEvent = "data" in event ? event.data : undefined;
+    const reference = paystackEvent?.reference ?? defaultEvent?.reference ?? "";
+
+    if (!reference.trim()) {
       throw new AppError("reference is required", 400, "failed");
     }
 
-    const status: PaymentTransactionEntity["status"] =
-      event.status === "success" ||
-      event.status === "failed" ||
-      event.status === "abandoned"
-        ? event.status
-        : "pending";
+    const incomingStatus = String(
+      paystackEvent?.status ?? defaultEvent?.status ?? "pending",
+    );
+
+    const status = mapPaystackStatusToPaymentStatus(incomingStatus);
 
     const transaction = await paymentModel.markPaymentStatus(
-      event.reference,
+      reference,
       status,
-      event.payload,
+      {
+        provider: "paystack",
+        webhook: event as unknown as Record<string, unknown>,
+      },
     );
 
     if (!transaction) {
@@ -101,7 +179,7 @@ export const paymentWebhook = asyncHandler(
     return sendSuccess(
       res,
       "Webhook received",
-      { reference: event.reference, status },
+      { reference, status },
       200,
       "ok",
     );
