@@ -4,13 +4,13 @@
   "private": true,
   "main": "dist/server.js",
   "scripts": {
-    "dev": "npm run migrate:up && cross-env NODE_ENV=development tsx watch src/server.ts",
+    "dev": "cross-env NODE_ENV=development npm run migrate:up && cross-env NODE_ENV=development tsx watch src/server.ts",
     "build": "cross-env NODE_ENV=production tsc -p tsconfig.json",
-    "start": "npm run migrate:up && cross-env NODE_ENV=production node dist/server.js",
+    "start": "cross-env NODE_ENV=production npm run migrate:up && cross-env NODE_ENV=production node dist/server.js",
     "migrate:create": "cross-env NODE_ENV=development tsx scripts/migrate.ts create",
-    "migrate:up": "cross-env NODE_ENV=development tsx scripts/migrate.ts up",
-    "migrate:down": "cross-env NODE_ENV=development tsx scripts/migrate.ts down",
-    "migrate:status": "cross-env NODE_ENV=development tsx scripts/migrate.ts status"
+    "migrate:up": "tsx scripts/migrate.ts up",
+    "migrate:down": "tsx scripts/migrate.ts down",
+    "migrate:status": "tsx scripts/migrate.ts status"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -38,10 +38,8 @@
     "multer": "^2.1.1",
     "nodemailer": "^8.0.2",
     "pg": "^8.20.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "zod": "^4.3.6"
-  },
-  "devDependencies": {
-    "tsx": "^4.21.0"
   }
 }
