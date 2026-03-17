@@ -1,5 +1,8 @@
+import { readFileSync } from "node:fs";
 import "./env.js";
 import { Pool, QueryResult, QueryResultRow } from "pg";
+import { resolve } from "node:path";
+import { cwd } from "node:process";
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -17,6 +20,13 @@ try {
 
 const pool = new Pool({
   connectionString: databaseUrl,
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? {
+          rejectUnauthorized: false,
+          ca: readFileSync(resolve(cwd(), "ca.pem")).toString(),
+        }
+      : false,
 });
 
 export async function dbQuery<T extends QueryResultRow = QueryResultRow>(
