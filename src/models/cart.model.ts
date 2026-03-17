@@ -1,4 +1,4 @@
-import { dbQuery } from "../config/db";
+import { dbQuery } from "../config/db.js";
 
 export async function upsertCartItem(
   customerId: string,

@@ -1,4 +1,4 @@
-import { dbQuery } from "../config/db";
+import { dbQuery } from "../config/db.js";
 
 export async function listCategories(): Promise<CategoryEntity[]> {
   const result = await dbQuery<CategoryEntity>(

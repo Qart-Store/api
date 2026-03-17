@@ -1,4 +1,4 @@
-import { dbQuery } from "../config/db";
+import { dbQuery } from "../config/db.js";
 
 function generateReference() {
   return `QART-${Date.now()}-${Math.floor(Math.random() * 100000)}`;

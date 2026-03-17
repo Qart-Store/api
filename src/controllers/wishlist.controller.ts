@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import * as wishlistModel from "../models/wishlist.model";
-import asyncHandler from "../utils/async-handler";
-import AppError from "../utils/app-error";
-import { sendSuccess } from "../utils/api-response";
+import * as wishlistModel from "../models/wishlist.model.js";
+import asyncHandler from "../utils/async-handler.js";
+import AppError from "../utils/app-error.js";
+import { sendSuccess } from "../utils/api-response.js";
 
 function toSingleParam(value: string | string[] | undefined) {
   if (Array.isArray(value)) return value[0] ?? "";

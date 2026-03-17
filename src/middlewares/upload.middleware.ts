@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import multer from "multer";
-import AppError from "../utils/app-error";
+import AppError from "../utils/app-error.js";
 
 const uploadRoot = path.resolve(process.cwd(), "uploads");
 const productUploadRoot = path.join(uploadRoot, "products");
@@ -12,7 +12,9 @@ const productStorage = multer.diskStorage({
     const targetDir =
       file.fieldname === "banner"
         ? path.join(productUploadRoot, "banners")
-        : path.join(productUploadRoot, "images");
+        : file.fieldname === "ogBanner"
+          ? path.join(productUploadRoot, "og-banners")
+          : path.join(productUploadRoot, "images");
 
     fs.mkdirSync(targetDir, { recursive: true });
     callback(null, targetDir);
@@ -41,12 +43,13 @@ const upload = multer({
   fileFilter: imageUploadFilter,
   limits: {
     fileSize: 5 * 1024 * 1024,
-    files: 21,
+    files: 22,
   },
 });
 
 export const productUploadMiddleware = upload.fields([
   { name: "banner", maxCount: 1 },
+  { name: "ogBanner", maxCount: 1 },
   { name: "images", maxCount: 20 },
 ]);
 

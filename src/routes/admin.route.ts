@@ -4,6 +4,7 @@ import { productUploadMiddleware } from "../middlewares/upload.middleware";
 import validateRequest from "../middlewares/validate-request.middleware";
 import {
   getDashboardSummary,
+  getDashboardCharts,
   listCustomers,
   getCustomer,
   updateCustomer,
@@ -79,6 +80,7 @@ const adminRouter = Router();
 adminRouter.use(adminAuthMiddleware);
 
 adminRouter.get("/dashboard/summary", getDashboardSummary);
+adminRouter.get("/dashboard/charts", getDashboardCharts);
 
 adminRouter.get(
   "/customers",

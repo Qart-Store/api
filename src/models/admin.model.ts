@@ -1,5 +1,5 @@
-import { dbQuery } from "../config/db";
-import slugify from "../utils/slugify";
+import { dbQuery } from "../config/db.js";
+import slugify from "../utils/slugify.js";
 
 function toPagination(page?: number, limit?: number) {
   const safePage = Math.max(1, Number(page ?? 1));
@@ -37,6 +37,64 @@ export async function getAdminDashboardSummary() {
     payments: Number(payments.rows[0]?.count ?? 0),
     successfulRevenue: Number(revenue.rows[0]?.revenue ?? 0),
     pendingOrders: Number(pendingOrders.rows[0]?.count ?? 0),
+  };
+}
+
+type DashboardSeriesPoint = {
+  label: string;
+  value: number;
+};
+
+async function getDailySeriesForTable(
+  tableName: "customers" | "products" | "orders" | "payment_transactions",
+  days: number,
+): Promise<DashboardSeriesPoint[]> {
+  const safeDays = Math.max(2, Math.min(60, Math.floor(days)));
+  const lookback = safeDays - 1;
+
+  const result = await dbQuery<{ label: string; value: number }>(
+    `
+      WITH days AS (
+        SELECT generate_series(
+          (CURRENT_DATE - INTERVAL '${lookback} days')::date,
+          CURRENT_DATE::date,
+          INTERVAL '1 day'
+        )::date AS day
+      ),
+      counts AS (
+        SELECT DATE(created_at) AS day, COUNT(*)::int AS value
+        FROM ${tableName}
+        WHERE created_at >= (CURRENT_DATE - INTERVAL '${lookback} days')
+        GROUP BY DATE(created_at)
+      )
+      SELECT
+        TO_CHAR(days.day, 'Mon DD') AS label,
+        COALESCE(counts.value, 0)::int AS value
+      FROM days
+      LEFT JOIN counts ON counts.day = days.day
+      ORDER BY days.day ASC;
+    `,
+  );
+
+  return result.rows.map((row) => ({
+    label: row.label,
+    value: Number(row.value ?? 0),
+  }));
+}
+
+export async function getAdminDashboardCharts(days = 14) {
+  const [customers, products, orders, payments] = await Promise.all([
+    getDailySeriesForTable("customers", days),
+    getDailySeriesForTable("products", days),
+    getDailySeriesForTable("orders", days),
+    getDailySeriesForTable("payment_transactions", days),
+  ]);
+
+  return {
+    customers,
+    products,
+    orders,
+    payments,
   };
 }
 

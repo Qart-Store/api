@@ -1,4 +1,4 @@
-import { dbQuery } from "../config/db";
+import { dbQuery } from "../config/db.js";
 
 const CUSTOMER_SELECT = `
   SELECT

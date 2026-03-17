@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import * as orderModel from "../models/order.model";
-import asyncHandler from "../utils/async-handler";
-import AppError from "../utils/app-error";
-import { sendSuccess } from "../utils/api-response";
+import * as orderModel from "../models/order.model.js";
+import asyncHandler from "../utils/async-handler.js";
+import AppError from "../utils/app-error.js";
+import { sendSuccess } from "../utils/api-response.js";
 
 function toSingleParam(value: string | string[] | undefined) {
   if (Array.isArray(value)) return value[0] ?? "";
@@ -17,42 +17,46 @@ function requireAuthUser(req: Request) {
   return req.authUser;
 }
 
-export const createMyOrder = asyncHandler(async (req: Request, res: Response) => {
-  const authUser = requireAuthUser(req);
-  const body = req.body as CreateOrderInput;
+export const createMyOrder = asyncHandler(
+  async (req: Request, res: Response) => {
+    const authUser = requireAuthUser(req);
+    const body = req.body as CreateOrderInput;
 
-  if (
-    !body?.shippingFullName?.trim() ||
-    !body?.shippingEmail?.trim() ||
-    !body?.shippingLocation?.trim()
-  ) {
-    throw new AppError(
-      "shippingFullName, shippingEmail and shippingLocation are required",
-      400,
-      "failed",
-    );
-  }
-
-  let order: OrderEntity;
-  try {
-    order = await orderModel.createOrderFromCart(authUser.id, body);
-  } catch (error) {
-    if (error instanceof Error && error.message === "Cart is empty") {
-      throw new AppError("Cart is empty", 400, "failed");
+    if (
+      !body?.shippingFullName?.trim() ||
+      !body?.shippingEmail?.trim() ||
+      !body?.shippingLocation?.trim()
+    ) {
+      throw new AppError(
+        "shippingFullName, shippingEmail and shippingLocation are required",
+        400,
+        "failed",
+      );
     }
 
-    throw error;
-  }
+    let order: OrderEntity;
+    try {
+      order = await orderModel.createOrderFromCart(authUser.id, body);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Cart is empty") {
+        throw new AppError("Cart is empty", 400, "failed");
+      }
 
-  return sendSuccess(res, "Order created", order, 201, "success");
-});
+      throw error;
+    }
 
-export const listMyOrders = asyncHandler(async (req: Request, res: Response) => {
-  const authUser = requireAuthUser(req);
-  const orders = await orderModel.listOrdersByCustomer(authUser.id);
+    return sendSuccess(res, "Order created", order, 201, "success");
+  },
+);
 
-  return sendSuccess(res, "Orders fetched", orders, 200, "ok");
-});
+export const listMyOrders = asyncHandler(
+  async (req: Request, res: Response) => {
+    const authUser = requireAuthUser(req);
+    const orders = await orderModel.listOrdersByCustomer(authUser.id);
+
+    return sendSuccess(res, "Orders fetched", orders, 200, "ok");
+  },
+);
 
 export const getMyOrder = asyncHandler(async (req: Request, res: Response) => {
   const authUser = requireAuthUser(req);

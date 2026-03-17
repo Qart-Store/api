@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import * as adminModel from "../models/admin.model";
-import * as customerModel from "../models/customer.model";
-import * as productModel from "../models/product.model";
-import asyncHandler from "../utils/async-handler";
-import AppError from "../utils/app-error";
-import { sendSuccess } from "../utils/api-response";
+import * as adminModel from "../models/admin.model.js";
+import * as customerModel from "../models/customer.model.js";
+import * as productModel from "../models/product.model.js";
+import asyncHandler from "../utils/async-handler.js";
+import AppError from "../utils/app-error.js";
+import { sendSuccess } from "../utils/api-response.js";
 import {
   buildCreateProductInput,
   buildUpdateProductInput,
-} from "../utils/product-payload";
+} from "../utils/product-payload.js";
 
 function toSingleParam(value: string | string[] | undefined) {
   if (Array.isArray(value)) return value[0] ?? "";
@@ -38,6 +38,19 @@ export const getDashboardSummary = asyncHandler(
       res,
       "Admin dashboard summary fetched",
       summary,
+      200,
+      "ok",
+    );
+  },
+);
+
+export const getDashboardCharts = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const charts = await adminModel.getAdminDashboardCharts(14);
+    return sendSuccess(
+      res,
+      "Admin dashboard charts fetched",
+      charts,
       200,
       "ok",
     );
@@ -323,6 +336,18 @@ export const createProduct = asyncHandler(
         400,
         "failed",
       );
+    }
+
+    if (!body.seoTitle?.trim()) {
+      throw new AppError("seoTitle is required", 400, "failed");
+    }
+
+    if (!body.seoDescription?.trim()) {
+      throw new AppError("seoDescription is required", 400, "failed");
+    }
+
+    if (!body.seoKeywords?.length) {
+      throw new AppError("at least one seoKeyword is required", 400, "failed");
     }
 
     const product = await productModel.createProduct(body);

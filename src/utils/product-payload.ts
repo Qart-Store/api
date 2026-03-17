@@ -58,12 +58,14 @@ function getUploadedProductFiles(req: Request) {
   const files = req.files as
     | {
         banner?: Express.Multer.File[];
+        ogBanner?: Express.Multer.File[];
         images?: Express.Multer.File[];
       }
     | undefined;
 
   return {
     banner: files?.banner?.[0],
+    ogBanner: files?.ogBanner?.[0],
     images: files?.images ?? [],
   };
 }
@@ -80,14 +82,21 @@ export async function buildCreateProductInput(
   const bannerUrl = uploadedFiles.banner
     ? await resolveUploadedFileUrl(uploadedFiles.banner)
     : toNullableString(body.bannerUrl);
+  const ogImageUrl = uploadedFiles.ogBanner
+    ? await resolveUploadedFileUrl(uploadedFiles.ogBanner)
+    : toNullableString(body.ogImageUrl);
 
   return {
     name: String(body.name ?? "").trim(),
     description: toNullableString(body.description),
+    seoTitle: String(body.seoTitle ?? "").trim(),
+    seoDescription: String(body.seoDescription ?? "").trim(),
+    seoKeywords: toStringArray(body.seoKeywords) ?? [],
+    canonicalUrl: toNullableString(body.canonicalUrl),
+    ogImageUrl,
     price: toOptionalNumber(body.price) ?? Number.NaN,
     status: body.status as ProductStatus | undefined,
     stock: toOptionalNumber(body.stock),
-    sku: toNullableString(body.sku),
     rating: toOptionalNumber(body.rating),
     bannerUrl,
     categorySlug: toNullableString(body.categorySlug),
@@ -114,10 +123,24 @@ export async function buildUpdateProductInput(
   if (body.description !== undefined) {
     payload.description = toNullableString(body.description);
   }
+  if (body.seoTitle !== undefined) {
+    payload.seoTitle = toNullableString(body.seoTitle);
+  }
+  if (body.seoDescription !== undefined) {
+    payload.seoDescription = toNullableString(body.seoDescription);
+  }
+  if (body.seoKeywords !== undefined) {
+    payload.seoKeywords = toStringArray(body.seoKeywords);
+  }
+  if (body.canonicalUrl !== undefined) {
+    payload.canonicalUrl = toNullableString(body.canonicalUrl);
+  }
+  if (body.ogImageUrl !== undefined) {
+    payload.ogImageUrl = toNullableString(body.ogImageUrl);
+  }
   if (body.price !== undefined) payload.price = toOptionalNumber(body.price);
   if (body.status !== undefined) payload.status = body.status as ProductStatus;
   if (body.stock !== undefined) payload.stock = toOptionalNumber(body.stock);
-  if (body.sku !== undefined) payload.sku = toNullableString(body.sku);
   if (body.rating !== undefined) payload.rating = toOptionalNumber(body.rating);
   if (body.categorySlug !== undefined) {
     payload.categorySlug = toNullableString(body.categorySlug);
@@ -134,6 +157,10 @@ export async function buildUpdateProductInput(
     payload.bannerUrl = await resolveUploadedFileUrl(uploadedFiles.banner);
   } else if (body.bannerUrl !== undefined) {
     payload.bannerUrl = toNullableString(body.bannerUrl);
+  }
+
+  if (uploadedFiles.ogBanner) {
+    payload.ogImageUrl = await resolveUploadedFileUrl(uploadedFiles.ogBanner);
   }
 
   if (body.images !== undefined || uploadedImageUrls.length) {

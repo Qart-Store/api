@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { z, ZodSchema } from "zod";
-import AppError from "../utils/app-error";
+import AppError from "../utils/app-error.js";
 
 interface ValidateRequestSchema {
   body?: ZodSchema;
@@ -36,7 +36,20 @@ function validateRequest(schema: ValidateRequestSchema) {
       schema.params,
       req.params,
     ) as Request["params"];
-    req.query = validateOrThrow(schema.query, req.query) as Request["query"];
+
+    if (schema.query) {
+      const validatedQuery = validateOrThrow(schema.query, req.query) as Record<
+        string,
+        unknown
+      >;
+      const queryTarget = req.query as Record<string, unknown>;
+
+      for (const key of Object.keys(queryTarget)) {
+        delete queryTarget[key];
+      }
+
+      Object.assign(queryTarget, validatedQuery);
+    }
 
     next();
   };

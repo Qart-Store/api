@@ -1,4 +1,4 @@
-import { dbQuery } from "../config/db";
+import { dbQuery } from "../config/db.js";
 
 export async function addWishlistItem(customerId: string, productId: string) {
   await dbQuery(

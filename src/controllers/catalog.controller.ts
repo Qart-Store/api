@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import asyncHandler from "../utils/async-handler";
-import { sendSuccess } from "../utils/api-response";
-import * as catalogModel from "../models/catalog.model";
+import asyncHandler from "../utils/async-handler.js";
+import { sendSuccess } from "../utils/api-response.js";
+import * as catalogModel from "../models/catalog.model.js";
 
 export const getCategories = asyncHandler(
   async (_req: Request, res: Response) => {

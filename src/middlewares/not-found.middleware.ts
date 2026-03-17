@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { sendError } from "../utils/api-response";
+import { sendError } from "../utils/api-response.js";
 
 function notFoundHandler(req: Request, res: Response, _next: NextFunction) {
   return sendError(

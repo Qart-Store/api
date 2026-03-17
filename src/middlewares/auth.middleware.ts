@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import AppError from "../utils/app-error";
-import { verifyAuthToken } from "../utils/token";
+import AppError from "../utils/app-error.js";
+import { verifyAuthToken } from "../utils/token.js";
 
 function authMiddleware(req: Request, _res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;

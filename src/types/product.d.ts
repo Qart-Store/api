@@ -20,6 +20,11 @@ interface ProductEntity {
   name: string;
   slug: string;
   description: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  seoKeywords: string[];
+  canonicalUrl: string | null;
+  ogImageUrl: string | null;
   price: number;
   status: ProductStatus;
   stock: number;
@@ -63,6 +68,11 @@ interface ProductListResult {
 interface CreateProductInput {
   name: string;
   description?: string | null;
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string[];
+  canonicalUrl?: string | null;
+  ogImageUrl?: string | null;
   price: number;
   status?: ProductStatus;
   stock?: number;
@@ -79,6 +89,11 @@ interface CreateProductInput {
 interface UpdateProductInput {
   name?: string;
   description?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  seoKeywords?: string[];
+  canonicalUrl?: string | null;
+  ogImageUrl?: string | null;
   price?: number;
   status?: ProductStatus;
   stock?: number;

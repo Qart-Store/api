@@ -1,8 +1,8 @@
+import "../src/config/env.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { Client } from "pg";
-import "../src/config/load-env";
 
 type MigrationDirection = "up" | "down";
 
@@ -20,6 +20,14 @@ function assertDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     throw new Error("DATABASE_URL is required. Add it to your .env file.");
+  }
+
+  try {
+    new URL(databaseUrl);
+  } catch {
+    throw new Error(
+      "DATABASE_URL is invalid. If the password contains special characters like #, @, :, or /, URL-encode them first.",
+    );
   }
 
   return databaseUrl;

@@ -1,10 +1,18 @@
+import "./env.js";
 import { Pool, QueryResult, QueryResultRow } from "pg";
-import "./load-env";
 
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
   throw new Error("DATABASE_URL is required. Add it to your .env file.");
+}
+
+try {
+  new URL(databaseUrl);
+} catch {
+  throw new Error(
+    "DATABASE_URL is invalid. If the password contains special characters like #, @, :, or /, URL-encode them first.",
+  );
 }
 
 const pool = new Pool({

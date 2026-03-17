@@ -6,18 +6,17 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import path from "node:path";
-import env from "./config/env";
-import errorHandler from "./middlewares/error-handler.middleware";
-import notFoundHandler from "./middlewares/not-found.middleware";
-import catalogRouter from "./routes/catalog.route";
-import cartRouter from "./routes/cart.route";
-import customerRouter from "./routes/customer.route";
-import orderRouter from "./routes/order.route";
-import paymentRouter from "./routes/payment.route";
-import productRouter from "./routes/product.route";
-import wishlistRouter from "./routes/wishlist.route";
-import adminRouter from "./routes/admin.route";
-import { sendSuccess } from "./utils/api-response";
+import errorHandler from "./middlewares/error-handler.middleware.js";
+import notFoundHandler from "./middlewares/not-found.middleware.js";
+import catalogRouter from "./routes/catalog.route.js";
+import cartRouter from "./routes/cart.route.js";
+import customerRouter from "./routes/customer.route.js";
+import orderRouter from "./routes/order.route.js";
+import paymentRouter from "./routes/payment.route.js";
+import productRouter from "./routes/product.route.js";
+import wishlistRouter from "./routes/wishlist.route.js";
+import adminRouter from "./routes/admin.route.js";
+import { sendSuccess } from "./utils/api-response.js";
 
 const app = express();
 
@@ -25,14 +24,14 @@ app.set("trust proxy", 1);
 
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true,
   }),
 );
 app.use(helmet());
 app.use(compression());
 app.use(cookieParser());
-app.use(morgan(env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(
   express.json({
     limit: "1mb",
@@ -48,7 +47,7 @@ app.get("/health", (_req, res) => {
   return sendSuccess(
     res,
     "API is running",
-    { environment: env.NODE_ENV },
+    { environment: process.env.NODE_ENV },
     200,
     "ok",
   );

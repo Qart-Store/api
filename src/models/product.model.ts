@@ -1,5 +1,5 @@
-import { dbQuery } from "../config/db";
-import slugify from "../utils/slugify";
+import { dbQuery } from "../config/db.js";
+import slugify from "../utils/slugify.js";
 
 const BASE_SELECT = `
   SELECT
@@ -7,6 +7,11 @@ const BASE_SELECT = `
     p.name,
     p.slug,
     p.description,
+    p.seo_title AS "seoTitle",
+    p.seo_description AS "seoDescription",
+    COALESCE(p.seo_keywords, '{}') AS "seoKeywords",
+    p.canonical_url AS "canonicalUrl",
+    p.og_image_url AS "ogImageUrl",
     p.price::float8 AS price,
     p.status,
     p.stock,
@@ -45,6 +50,12 @@ const GROUP_BY = `
 
 function normalizeArray(values?: string[]) {
   return (values ?? []).map((value) => value.trim()).filter(Boolean);
+}
+
+function generateSku(name: string) {
+  const base = slugify(name).replace(/-/g, "").slice(0, 8).toUpperCase();
+  const suffix = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `${base || "QART"}-${suffix}`;
 }
 
 async function ensureCategoryId(
@@ -228,9 +239,11 @@ export async function createProduct(
   const inserted = await dbQuery<{ id: string }>(
     `
       INSERT INTO products(
-        name, slug, description, price, status, stock, sku, rating, banner_url, category_id, brand_id
+        name, slug, description, seo_title, seo_description, seo_keywords, canonical_url, og_image_url,
+        price, status, stock, sku, rating, banner_url, category_id, brand_id
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+        $1, $2, $3, $4, $5, $6, $7, $8,
+        $9, $10, $11, $12, $13, $14, $15, $16
       )
       RETURNING id;
     `,
@@ -238,10 +251,15 @@ export async function createProduct(
       input.name.trim(),
       productSlug,
       input.description ?? null,
+      input.seoTitle.trim(),
+      input.seoDescription.trim(),
+      normalizeArray(input.seoKeywords),
+      input.canonicalUrl ?? null,
+      input.ogImageUrl ?? null,
       input.price,
       input.status ?? "available",
       input.stock ?? 0,
-      input.sku ?? null,
+      generateSku(input.name),
       input.rating ?? null,
       input.bannerUrl ?? null,
       categoryId,
@@ -310,14 +328,19 @@ export async function updateProduct(
         name = $2,
         slug = $3,
         description = $4,
-        price = $5,
-        status = $6,
-        stock = $7,
-        sku = $8,
-        rating = $9,
-        banner_url = $10,
-        category_id = $11,
-        brand_id = $12
+        seo_title = $5,
+        seo_description = $6,
+        seo_keywords = $7,
+        canonical_url = $8,
+        og_image_url = $9,
+        price = $10,
+        status = $11,
+        stock = $12,
+        sku = $13,
+        rating = $14,
+        banner_url = $15,
+        category_id = $16,
+        brand_id = $17
       WHERE id = $1;
     `,
     [
@@ -327,6 +350,17 @@ export async function updateProduct(
       input.description !== undefined
         ? input.description
         : existing.description,
+      input.seoTitle !== undefined ? input.seoTitle : existing.seoTitle,
+      input.seoDescription !== undefined
+        ? input.seoDescription
+        : existing.seoDescription,
+      input.seoKeywords !== undefined
+        ? normalizeArray(input.seoKeywords)
+        : existing.seoKeywords,
+      input.canonicalUrl !== undefined
+        ? input.canonicalUrl
+        : existing.canonicalUrl,
+      input.ogImageUrl !== undefined ? input.ogImageUrl : existing.ogImageUrl,
       input.price !== undefined ? input.price : existing.price,
       input.status ?? existing.status,
       input.stock !== undefined ? input.stock : existing.stock,

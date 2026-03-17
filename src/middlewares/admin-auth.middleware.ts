@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import env from "../config/env";
-import AppError from "../utils/app-error";
+
+import AppError from "../utils/app-error.js";
 
 /**
  * Admin authentication middleware.
@@ -22,7 +22,7 @@ function adminAuthMiddleware(req: Request, _res: Response, next: NextFunction) {
 
   const providedKey = normalizedHeaderKey ?? normalizedBearer;
 
-  if (!env.ADMIN_API_KEY?.trim()) {
+  if (!process.env.ADMIN_API_KEY?.trim()) {
     throw new AppError(
       "ADMIN_API_KEY is not configured on the server",
       500,
@@ -30,7 +30,7 @@ function adminAuthMiddleware(req: Request, _res: Response, next: NextFunction) {
     );
   }
 
-  if (!providedKey || providedKey !== env.ADMIN_API_KEY) {
+  if (!providedKey || providedKey !== process.env.ADMIN_API_KEY) {
     throw new AppError("Admin authentication required", 401, "failed");
   }
 

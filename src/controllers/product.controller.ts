@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import * as productModel from "../models/product.model";
-import asyncHandler from "../utils/async-handler";
-import AppError from "../utils/app-error";
-import { sendSuccess } from "../utils/api-response";
+import * as productModel from "../models/product.model.js";
+import asyncHandler from "../utils/async-handler.js";
+import AppError from "../utils/app-error.js";
+import { sendSuccess } from "../utils/api-response.js";
 import {
   buildCreateProductInput,
   buildUpdateProductInput,
-} from "../utils/product-payload";
+} from "../utils/product-payload.js";
 
 function toNumber(value: unknown) {
   if (value === undefined || value === null || value === "") return undefined;
@@ -105,6 +105,18 @@ export const createProduct = asyncHandler(
         400,
         "failed",
       );
+    }
+
+    if (!body.seoTitle?.trim()) {
+      throw new AppError("seoTitle is required", 400, "failed");
+    }
+
+    if (!body.seoDescription?.trim()) {
+      throw new AppError("seoDescription is required", 400, "failed");
+    }
+
+    if (!body.seoKeywords?.length) {
+      throw new AppError("at least one seoKeyword is required", 400, "failed");
     }
 
     const product = await productModel.createProduct(body);

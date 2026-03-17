@@ -150,10 +150,16 @@ export const createProductBodySchema = z
   .object({
     name: z.string().trim().min(1).max(180),
     description: z.string().trim().max(2000).optional().nullable(),
+    seoTitle: z.string().trim().min(10).max(70),
+    seoDescription: z.string().trim().min(50).max(160),
+    seoKeywords: stringArraySchema.pipe(
+      z.array(z.string().trim().min(2).max(60)).min(1).max(20),
+    ),
+    canonicalUrl: z.string().trim().url().optional().nullable(),
+    ogImageUrl: z.string().trim().url().optional().nullable(),
     price: z.coerce.number().min(0),
     status: productsQuerySchema.shape.status,
     stock: z.coerce.number().int().min(0).optional(),
-    sku: z.string().trim().min(1).max(120).optional().nullable(),
     rating: z.coerce.number().min(0).max(5).optional().nullable(),
     bannerUrl: z.string().trim().url().optional().nullable(),
     categorySlug: z.string().trim().min(1).max(180).optional().nullable(),
