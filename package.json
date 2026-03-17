@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm run migrate:up && cross-env NODE_ENV=development tsx watch src/server.ts",
     "build": "cross-env NODE_ENV=production tsc -p tsconfig.json",
-    "start": "cross-env NODE_ENV=production node dist/server.js",
+    "start": "npm run migrate:up && cross-env NODE_ENV=production node dist/server.js",
     "migrate:create": "cross-env NODE_ENV=development tsx scripts/migrate.ts create",
     "migrate:up": "cross-env NODE_ENV=development tsx scripts/migrate.ts up",
     "migrate:down": "cross-env NODE_ENV=development tsx scripts/migrate.ts down",
