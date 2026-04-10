@@ -23,7 +23,7 @@ const pool = new Pool({
   ssl:
     process.env.NODE_ENV === "production"
       ? {
-          rejectUnauthorized: false,
+          rejectUnauthorized: true,
           ca: readFileSync(resolve(cwd(), "ca.pem")).toString(),
         }
       : false,

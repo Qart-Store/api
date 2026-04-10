@@ -1,8 +1,8 @@
-import "../src/config/env.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { Client } from "pg";
+import type { PoolClient } from "pg";
+import pool from "../src/config/db.js";
 
 type MigrationDirection = "up" | "down";
 
@@ -16,30 +16,11 @@ const ROOT_DIR = path.resolve(__dirname, "..");
 const MIGRATIONS_DIR = path.join(ROOT_DIR, "migrations");
 const TABLE_NAME = "schema_migrations";
 
-function assertDatabaseUrl() {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required. Add it to your .env file.");
-  }
-
-  try {
-    new URL(databaseUrl);
-  } catch {
-    throw new Error(
-      "DATABASE_URL is invalid. If the password contains special characters like #, @, :, or /, URL-encode them first.",
-    );
-  }
-
-  return databaseUrl;
-}
-
 async function getClient() {
-  const client = new Client({ connectionString: assertDatabaseUrl() });
-  await client.connect();
-  return client;
+  return pool.connect();
 }
 
-async function ensureMigrationsTable(client: Client) {
+async function ensureMigrationsTable(client: PoolClient) {
   await client.query(`
     CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
       id TEXT PRIMARY KEY,
@@ -86,7 +67,7 @@ async function getMigrationPairs() {
   return pairs;
 }
 
-async function getAppliedMigrationIds(client: Client) {
+async function getAppliedMigrationIds(client: PoolClient) {
   const result = await client.query<{ id: string }>(
     `SELECT id FROM ${TABLE_NAME} ORDER BY id ASC;`,
   );
@@ -94,7 +75,10 @@ async function getAppliedMigrationIds(client: Client) {
   return result.rows.map((row) => row.id);
 }
 
-async function applyMigration(client: Client, migration: MigrationFilePair) {
+async function applyMigration(
+  client: PoolClient,
+  migration: MigrationFilePair,
+) {
   const sql = await fs.readFile(migration.upPath, "utf8");
 
   await client.query("BEGIN");
@@ -111,7 +95,10 @@ async function applyMigration(client: Client, migration: MigrationFilePair) {
   }
 }
 
-async function rollbackMigration(client: Client, migration: MigrationFilePair) {
+async function rollbackMigration(
+  client: PoolClient,
+  migration: MigrationFilePair,
+) {
   const sql = await fs.readFile(migration.downPath, "utf8");
 
   await client.query("BEGIN");
@@ -152,7 +139,8 @@ async function runUp() {
 
     console.log(`Done. Applied ${pending.length} migration(s).`);
   } finally {
-    await client.end();
+    client.release();
+    await pool.end();
   }
 }
 
@@ -185,7 +173,8 @@ async function runDown(steps = 1) {
 
     console.log(`Done. Rolled back ${targets.length} migration(s).`);
   } finally {
-    await client.end();
+    client.release();
+    await pool.end();
   }
 }
 
@@ -211,7 +200,8 @@ async function runStatus() {
       console.log(`${status.padEnd(7)} ${migration.id}`);
     }
   } finally {
-    await client.end();
+    client.release();
+    await pool.end();
   }
 }
 

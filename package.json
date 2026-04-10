@@ -9,8 +9,14 @@
     "start": "cross-env NODE_ENV=production npm run migrate:up && cross-env NODE_ENV=production node dist/server.js",
     "migrate:create": "cross-env NODE_ENV=development tsx scripts/migrate.ts create",
     "migrate:up": "tsx scripts/migrate.ts up",
+    "migrate:up:dev": "cross-env NODE_ENV=development npm run migrate:up",
+    "migrate:up:prod": "cross-env NODE_ENV=production npm run migrate:up",
     "migrate:down": "tsx scripts/migrate.ts down",
-    "migrate:status": "tsx scripts/migrate.ts status"
+    "migrate:down:dev": "cross-env NODE_ENV=development npm run migrate:down",
+    "migrate:down:prod": "cross-env NODE_ENV=production npm run migrate:down",
+    "migrate:status": "tsx scripts/migrate.ts status",
+    "migrate:status:dev": "cross-env NODE_ENV=development npm run migrate:status",
+    "migrate:status:prod": "cross-env NODE_ENV=production npm run migrate:status"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
