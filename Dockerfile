@@ -7,7 +7,6 @@ FROM deps AS build
 COPY tsconfig.json ./
 COPY src ./src
 # This line is optional now, but harmless to keep
-COPY ca.pem /ca.pem
 RUN npm run build
 
 FROM node:22-alpine AS runtime
