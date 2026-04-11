@@ -22,7 +22,7 @@ COPY scripts ./scripts
 COPY src ./src
 COPY --from=build /app/dist ./dist
 
-RUN ln -s /mnt/secrets/ca.pem /ca.pem
+RUN ln -s /mnt/secrets/ca.pem /app/ca.pem
 
 EXPOSE 8080
 
