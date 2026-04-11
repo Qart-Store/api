@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { cwd } from "node:process";
 
 const databaseUrl = process.env.DATABASE_URL;
+const caPath = process.env.CA_PATH || resolve(cwd(), "ca.pem");
 
 if (!databaseUrl) {
   throw new Error("DATABASE_URL is required. Add it to your .env file.");
@@ -24,7 +25,7 @@ const pool = new Pool({
     process.env.NODE_ENV === "production"
       ? {
           rejectUnauthorized: true,
-          ca: readFileSync(resolve(cwd(), "ca.pem")).toString(),
+          ca: readFileSync(caPath).toString(),
         }
       : false,
 });
