@@ -23,6 +23,8 @@ COPY scripts ./scripts
 COPY src ./src
 COPY --from=build /app/dist ./dist
 
+RUN ln -s /mnt/secrets/ca.pem /ca.pem
+
 EXPOSE 5000
 
 CMD ["npm", "start"]
